@@ -52,6 +52,10 @@ import com.vishnu.kohliprotocol.ui.components.MutedText
 import com.vishnu.kohliprotocol.ui.components.PhotoThumbnail
 import com.vishnu.kohliprotocol.ui.components.PrimaryButton
 import com.vishnu.kohliprotocol.ui.components.SecondaryButton
+import com.vishnu.kohliprotocol.ui.components.StatusPill
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import com.vishnu.kohliprotocol.ui.theme.KohliType
 import com.vishnu.kohliprotocol.ui.theme.KohliColors
 
@@ -95,6 +99,16 @@ fun FoodEditorSheet(state: EditorState, viewModel: DashboardViewModel) {
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             Text(title.uppercase(), style = KohliType.Brand.copy(fontSize = 20.sp))
+
+            if (target is EditorTarget.Existing) {
+                val logged = Instant.ofEpochMilli(target.item.entry.timestamp)
+                    .atZone(ZoneId.systemDefault())
+                    .format(DateTimeFormatter.ofPattern("EEE d MMM · HH:mm"))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    StatusPill(target.item.label, KohliColors.Accent)
+                    StatusPill("Logged $logged", KohliColors.Muted)
+                }
+            }
 
             if (target is EditorTarget.Slot && target.slot.status == SlotStatus.SKIPPED) {
                 MutedText("This meal is marked skipped. Logging food will un-skip it.")

@@ -39,13 +39,6 @@ sealed class ProtectedAction {
         companion object { const val TYPE = "remove_restricted_app" }
     }
 
-    data class MockGamesPass(val minutes: Long) : ProtectedAction() {
-        override val requestedAudit = AuditAction.GAMES_TEST_OVERRIDE
-        override fun describe() = "Testing: mock a successful week and unlock games for $minutes minutes"
-        override fun toJson(): JSONObject = JSONObject().put("type", TYPE).put("minutes", minutes)
-        companion object { const val TYPE = "mock_games_pass" }
-    }
-
     data class EmergencyOverride(
         val categories: Set<RestrictionCategory>,
         val minutes: Int,
@@ -93,7 +86,6 @@ sealed class ProtectedAction {
                 json.getString("package"),
                 json.getString("label"),
             )
-            MockGamesPass.TYPE -> MockGamesPass(json.getLong("minutes"))
             EmergencyOverride.TYPE -> {
                 val names = json.getJSONArray("categories")
                 EmergencyOverride(

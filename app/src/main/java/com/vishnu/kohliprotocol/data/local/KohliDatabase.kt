@@ -1,6 +1,7 @@
 package com.vishnu.kohliprotocol.data.local
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -27,8 +28,14 @@ import com.vishnu.kohliprotocol.data.local.entity.WeeklyReportEntity
         AuditEventEntity::class,
         MotivationPhotoEntity::class,
     ],
-    version = 1,
+    version = 3,
     exportSchema = true,
+    autoMigrations = [
+        // v2: DailyAnalysisEntity.habitSummary (nullable column; existing rows keep their data).
+        AutoMigration(from = 1, to = 2),
+        // v3: DailyAnalysisEntity.aiRating (nullable column).
+        AutoMigration(from = 2, to = 3),
+    ],
 )
 @TypeConverters(Converters::class)
 abstract class KohliDatabase : RoomDatabase() {

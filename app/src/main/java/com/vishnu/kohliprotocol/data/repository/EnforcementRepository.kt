@@ -19,26 +19,19 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 /**
- * Everything the game lock needs, as one snapshot. [isUnlocked] is time-dependent because a
- * test override expires on its own.
+ * Everything the game lock needs, as one snapshot. Access is decided only by the latest real
+ * weekly evaluation against the Biryani Parameter.
  */
 data class GameAccessState(
     /** The result of the latest weekly evaluation (games start locked). */
     val unlockedByEvaluation: Boolean,
-    val testOverride: Boolean?,
-    val testOverrideUntil: Long,
     val latestReport: WeeklyReportEntity?,
     val gamePackages: Set<String>,
 ) {
-    fun isTestActive(now: Long = System.currentTimeMillis()): Boolean =
-        testOverride != null && now < testOverrideUntil
-
-    fun isUnlocked(now: Long = System.currentTimeMillis()): Boolean =
-        if (isTestActive(now)) testOverride == true else unlockedByEvaluation
+    fun isUnlocked(): Boolean = unlockedByEvaluation
 
     /** Why games are locked, for the restriction overlay. */
-    fun lockReason(now: Long = System.currentTimeMillis()): String {
-        if (isTestActive(now)) return "Mock weekly evaluation (test mode): FAILED."
+    fun lockReason(): String {
         val report = latestReport ?: return "Games start locked until your first successful week."
         return when {
             !report.logsComplete -> "Last week's food logs were incomplete."
@@ -81,14 +74,11 @@ class EnforcementRepository(
 
     val gameAccess: Flow<GameAccessState> = combine(
         preferences.isGamesUnlocked,
-        preferences.gamesTestOverride,
         weeklyReportDao.observeLatest(),
         preferences.restrictionLists,
-    ) { unlocked, override, latest, lists ->
+    ) { unlocked, latest, lists ->
         GameAccessState(
             unlockedByEvaluation = unlocked,
-            testOverride = override?.first,
-            testOverrideUntil = override?.second ?: 0L,
             latestReport = latest,
             gamePackages = lists[RestrictionCategory.GAMES],
         )
@@ -141,28 +131,6 @@ class EnforcementRepository(
                 reason,
             )
         }
-    }
-
-    /**
-     * "Mock Weekly Evaluation" for testing the game lock on hardware. Deliberately temporary
-     * ([TEST_OVERRIDE_MINUTES]) and audited, so it can't become a permanent unlock.
-     */
-    suspend fun startGamesTestOverride(unlocked: Boolean, approval: GuardianApproval? = null) {
-        // A mock PASS unlocks games, so it is a weakening action like any other.
-        require(!unlocked || approval != null) { "Mock PASS requires Guardian Gate approval" }
-        val until = System.currentTimeMillis() + TEST_OVERRIDE_MINUTES * 60_000
-        preferences.setGamesTestOverride(unlocked, until)
-        val time = Instant.ofEpochMilli(until).atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("HH:mm"))
-        audit.log(
-            AuditAction.GAMES_TEST_OVERRIDE,
-            "Mock weekly evaluation: ${if (unlocked) "PASS (games unlocked)" else "FAIL (games locked)"} until $time",
-            metadata = approval?.auditMetadata,
-        )
-    }
-
-    suspend fun endGamesTestOverride() {
-        preferences.setGamesTestOverride(null, 0L)
-        audit.log(AuditAction.GAMES_TEST_OVERRIDE, "Mock weekly evaluation ended")
     }
 
     // --- Restricted apps -------------------------------------------------------------------
@@ -302,7 +270,6 @@ class EnforcementRepository(
         const val MIN_PARAMETER = 1.0f
         const val MAX_PARAMETER = 5.0f
 
-        const val TEST_OVERRIDE_MINUTES = 10L
         const val MAX_OVERRIDE_MINUTES = 60
 
         private val PACKAGE_NAME = Regex("""[a-zA-Z][a-zA-Z0-9_]*(\.[a-zA-Z][a-zA-Z0-9_]*)+""")

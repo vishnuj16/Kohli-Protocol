@@ -26,7 +26,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.vishnu.kohliprotocol.data.local.entity.DailyAnalysisEntity
 import com.vishnu.kohliprotocol.ui.components.AccentBanner
 import com.vishnu.kohliprotocol.ui.components.Eyebrow
@@ -55,6 +57,7 @@ fun YesterdayCard(
     onReject: (String) -> Unit,
     onAnalyzeNow: () -> Unit,
     onOpenAiSettings: () -> Unit,
+    onOpenDetails: (() -> Unit)? = null,
 ) {
     val analysis = state.yesterdayAnalysis
     if (analysis == null && !state.yesterdayHasLogs) return
@@ -70,6 +73,7 @@ fun YesterdayCard(
                     Spacer(Modifier.width(6.dp))
                     StatusPill("Accepted", KohliColors.Muted)
                 }
+                onOpenDetails?.let { GhostButton("Day details", onClick = it, color = KohliColors.Muted) }
             }
         }
         analysis != null && analysis.rejectionReason == null && !analyzing -> AccentBanner(accent = KohliColors.tier(analysis.rating)) {
@@ -79,6 +83,7 @@ fun YesterdayCard(
                 PrimaryButton("Accept", onClick = onAccept, fillWidth = false, modifier = Modifier.weight(1f))
                 SecondaryButton("Doesn't look right", onClick = { showReject = true }, modifier = Modifier.weight(1f).height(52.dp))
             }
+            onOpenDetails?.let { GhostButton("Day details", onClick = it, color = KohliColors.Muted) }
         }
         else -> PendingCard(
             title = title,
@@ -188,6 +193,16 @@ private fun Verdict(analysis: DailyAnalysisEntity) {
             style = MaterialTheme.typography.bodyLarge,
         )
         RatingMeter(analysis.rating)
+        analysis.habitSummary?.let {
+            Text(
+                it,
+                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp, lineHeight = 18.sp),
+                color = KohliColors.Muted,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(top = 4.dp),
+            )
+        }
         analysis.confidence?.let { MutedText("AI confidence: $it") }
     }
 }

@@ -56,7 +56,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.platform.LocalContext
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.vishnu.kohliprotocol.data.local.entity.MotivationPhotoEntity
 import com.vishnu.kohliprotocol.ui.components.InlineMessage
 import com.vishnu.kohliprotocol.ui.components.MessageTone
@@ -71,6 +73,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 private val cardShape = RoundedCornerShape(16.dp)
+private const val CARD_MAX_PX = 640
 private val addedFormat = DateTimeFormatter.ofPattern("d MMM yyyy")
 
 /** The Motivation tab: a Pinterest-style masonry feed of private photos. */
@@ -168,8 +171,19 @@ fun MotivationTab(viewModel: MotivationViewModel, contentPadding: PaddingValues)
 /** A masonry card: the photo at its natural aspect ratio. */
 @Composable
 private fun PhotoCard(photo: MotivationPhotoEntity, onClick: () -> Unit) {
+    val context = LocalContext.current
+    // Half-screen cards never need more than ~640px; decoding full camera resolution was the
+    // main cause of gallery jank.
+    val request = remember(photo.photoPath) {
+        ImageRequest.Builder(context)
+            .data(File(photo.photoPath))
+            .size(CARD_MAX_PX)
+            .memoryCacheKey("card:${photo.photoPath}")
+            .crossfade(true)
+            .build()
+    }
     AsyncImage(
-        model = File(photo.photoPath),
+        model = request,
         contentDescription = photo.title,
         contentScale = ContentScale.FillWidth,
         modifier = Modifier

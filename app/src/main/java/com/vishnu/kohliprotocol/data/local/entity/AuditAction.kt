@@ -52,4 +52,7 @@ enum class AuditAction {
     WEEKLY_REPORT_EMAILED,
     WEEKLY_REPORT_EMAIL_FAILED,
     REPORT_EMAIL_CONFIGURED,
+
+    // Maintenance
+    DAILY_TIER_RECALCULATED,
 }

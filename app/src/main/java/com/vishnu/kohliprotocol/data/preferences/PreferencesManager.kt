@@ -20,6 +20,7 @@ import com.vishnu.kohliprotocol.data.restrictions.RestrictionCategory
 import com.vishnu.kohliprotocol.data.restrictions.RestrictionLists
 import java.io.IOException
 import java.time.LocalDate
+import java.time.ZoneId
 
 /** The app's single preferences file, shared by [PreferencesManager] and [AiConfigStore]. */
 internal val Context.kohliDataStore: DataStore<Preferences> by preferencesDataStore(name = "kohli_preferences")
@@ -82,34 +83,35 @@ class PreferencesManager(context: Context) {
         .map { prefs -> prefs[KEY_PROTOCOL_START]?.let { runCatching { LocalDate.parse(it) }.getOrNull() } }
         .distinctUntilChanged()
 
-    /** Returns the protocol start date, recording [today] if none is stored yet. */
+    /**
+     * Returns the protocol start date, recording [today] and the initialization timestamp if
+     * none is stored yet. Installs that predate the timestamp get it backfilled from their
+     * existing start date, so their week anchor never moves on upgrade. Also clears preference
+     * keys left behind by retired features.
+     */
     suspend fun ensureProtocolStartDate(today: LocalDate): LocalDate {
         var start: LocalDate? = null
         dataStore.edit { prefs ->
             val stored = prefs[KEY_PROTOCOL_START]?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
-            start = stored ?: today.also { prefs[KEY_PROTOCOL_START] = it.toString() }
+            val resolved = stored ?: today.also { prefs[KEY_PROTOCOL_START] = it.toString() }
+            if (prefs[KEY_APP_INITIALIZED_AT] == null) {
+                prefs[KEY_APP_INITIALIZED_AT] = if (stored == null) {
+                    System.currentTimeMillis()
+                } else {
+                    resolved.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                }
+            }
+            prefs.remove(LEGACY_GAMES_TEST_OVERRIDE)
+            prefs.remove(LEGACY_GAMES_TEST_UNTIL)
+            start = resolved
         }
         return checkNotNull(start)
     }
 
-    /** A temporary test result (unlocked?) and when it expires, or null if none was set. */
-    val gamesTestOverride: Flow<Pair<Boolean, Long>?> = preferences.map { prefs ->
-        val value = prefs[KEY_GAMES_TEST_OVERRIDE] ?: return@map null
-        value to (prefs[KEY_GAMES_TEST_UNTIL] ?: 0L)
-    }.distinctUntilChanged()
-
-    /** [unlocked] null clears the test override. */
-    suspend fun setGamesTestOverride(unlocked: Boolean?, untilEpochMillis: Long) {
-        dataStore.edit {
-            if (unlocked == null) {
-                it.remove(KEY_GAMES_TEST_OVERRIDE)
-                it.remove(KEY_GAMES_TEST_UNTIL)
-            } else {
-                it[KEY_GAMES_TEST_OVERRIDE] = unlocked
-                it[KEY_GAMES_TEST_UNTIL] = untilEpochMillis
-            }
-        }
-    }
+    /** When the app was first initialized (epoch millis), or null on a fresh install. */
+    val appInitializationTimestamp: Flow<Long?> = preferences
+        .map { it[KEY_APP_INITIALIZED_AT] }
+        .distinctUntilChanged()
 
     // --- Restricted apps ---------------------------------------------------------------------------
 
@@ -201,8 +203,11 @@ class PreferencesManager(context: Context) {
 
         private val KEY_LAST_ANALYSIS_ERROR = stringPreferencesKey("last_analysis_error")
         private val KEY_PROTOCOL_START = stringPreferencesKey("protocol_start_date")
-        private val KEY_GAMES_TEST_OVERRIDE = booleanPreferencesKey("games_test_override")
-        private val KEY_GAMES_TEST_UNTIL = longPreferencesKey("games_test_override_until")
+        private val KEY_APP_INITIALIZED_AT = longPreferencesKey("app_initialization_timestamp")
+
+        // Retired mock weekly evaluation; removed from existing installs on launch.
+        private val LEGACY_GAMES_TEST_OVERRIDE = booleanPreferencesKey("games_test_override")
+        private val LEGACY_GAMES_TEST_UNTIL = longPreferencesKey("games_test_override_until")
         private val KEY_OVERRIDE_UNTIL = longPreferencesKey("emergency_override_until")
         private val KEY_OVERRIDE_CATEGORIES = stringSetPreferencesKey("emergency_override_categories")
         private val KEY_OVERRIDE_REQUEST = stringPreferencesKey("emergency_override_request")

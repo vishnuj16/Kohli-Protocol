@@ -95,7 +95,7 @@ abstract class SecureActivity : FragmentActivity() {
      * Separate fingerprint/PIN check for one especially private section inside an unlocked
      * screen (e.g. the Motivation tab). [onUnlocked] runs only on success.
      */
-    protected fun authenticateSection(reason: String, onUnlocked: () -> Unit) {
+    protected fun authenticateSection(reason: String, onDeclined: () -> Unit = {}, onUnlocked: () -> Unit) {
         if (prompting) return
         prompting = true
         container.biometric.authenticate(this, reason) { result ->
@@ -103,6 +103,8 @@ abstract class SecureActivity : FragmentActivity() {
             if (result == BiometricSecurityManager.Result.SUCCESS || result == BiometricSecurityManager.Result.UNAVAILABLE) {
                 SessionLock.markUnlocked()
                 onUnlocked()
+            } else {
+                onDeclined()
             }
         }
     }

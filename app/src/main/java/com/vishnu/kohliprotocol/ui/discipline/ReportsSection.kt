@@ -24,6 +24,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -82,7 +83,7 @@ fun WeeklyReportsSection(
         if (reports.isEmpty()) MutedText("No weeks evaluated yet.")
 
         reports.take(12).forEach { report ->
-            val pdf = report.pdfPath?.takeIf { File(it).isFile }
+            val pdf = remember(report.pdfPath) { report.pdfPath?.takeIf { File(it).isFile } }
             val resultColor = if (report.isSuccess) KohliColors.Logged else KohliColors.Missing
             Surface(
                 shape = RoundedCornerShape(14.dp),

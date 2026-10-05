@@ -244,8 +244,6 @@ class GuardianGateManager(
                 }
                 is ProtectedAction.RemoveRestrictedApp ->
                     enforcement.removeRestrictedApp(action.category, action.packageName, action.label, approval)
-                is ProtectedAction.MockGamesPass ->
-                    enforcement.startGamesTestOverride(unlocked = true, approval = approval)
                 is ProtectedAction.EmergencyOverride ->
                     enforcement.startEmergencyOverride(action.categories, action.minutes, action.reason, approval)
                 is ProtectedAction.ChangeGuardians -> applyGuardians(action, approval)

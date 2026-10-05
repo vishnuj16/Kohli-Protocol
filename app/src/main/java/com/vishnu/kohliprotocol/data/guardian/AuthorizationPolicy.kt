@@ -7,7 +7,6 @@ package com.vishnu.kohliprotocol.data.guardian
  * |--------------------------------|-------------------------------------------------|
  * | Lower Biryani Parameter        | any one guardian                                |
  * | Remove a restricted app        | any one guardian                                |
- * | Mock PASS (testing)            | any one guardian                                |
  * | Emergency override             | every guardian                                  |
  * | Change guardians               | every current guardian                          |
  * | Guardian recovery (lost access)| every *other* current guardian                  |
@@ -36,8 +35,7 @@ object AuthorizationPolicy {
 
     fun evaluate(action: ProtectedAction, current: List<Guardian>): Decision = when (action) {
         is ProtectedAction.LowerBiryaniParameter,
-        is ProtectedAction.RemoveRestrictedApp,
-        is ProtectedAction.MockGamesPass ->
+        is ProtectedAction.RemoveRestrictedApp ->
             if (current.isEmpty()) refusedNoGuardians()
             else Decision.Allowed(Requirement(ApproverRule.ANY_ONE, current, emptyList()))
 

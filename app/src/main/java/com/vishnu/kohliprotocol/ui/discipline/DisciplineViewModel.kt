@@ -162,21 +162,6 @@ class DisciplineViewModel(
         }
     }
 
-    /** Mock FAIL is stricter and free; Mock PASS goes through Guardian Gate. */
-    fun mockFail() {
-        viewModelScope.launch {
-            enforcement.startGamesTestOverride(unlocked = false)
-            _message.value = "Mock evaluation: FAIL — games locked for ${EnforcementRepository.TEST_OVERRIDE_MINUTES} minutes."
-        }
-    }
-
-    fun endMock() {
-        viewModelScope.launch {
-            enforcement.endGamesTestOverride()
-            _message.value = "Mock evaluation ended; real weekly result restored."
-        }
-    }
-
     fun evaluateNow() {
         viewModelScope.launch {
             val outcomes = weekly.evaluatePendingWeeks()

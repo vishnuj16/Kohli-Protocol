@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.sp
 import com.vishnu.kohliprotocol.R
 import com.vishnu.kohliprotocol.data.local.entity.MealType
 import com.vishnu.kohliprotocol.ui.components.GoldGradient
+import java.time.LocalDate
 import java.time.LocalTime
 import com.vishnu.kohliprotocol.ui.components.CardShape
 import com.vishnu.kohliprotocol.ui.components.MutedText
@@ -77,6 +78,7 @@ fun DashboardTab(
     contentPadding: PaddingValues,
     onOpenAiSettings: () -> Unit,
     onOpenDiscipline: () -> Unit,
+    onOpenReview: (LocalDate?) -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val week by viewModel.weekState.collectAsStateWithLifecycle()
@@ -110,10 +112,11 @@ fun DashboardTab(
                         onReject = { comment -> viewModel.rejectAnalysis(a.yesterday, comment) },
                         onAnalyzeNow = { viewModel.analyzeNow(a.yesterday) },
                         onOpenAiSettings = onOpenAiSettings,
+                        onOpenDetails = { onOpenReview(a.yesterday) },
                     )
                 }
             }
-            item { week?.let { WeekCard(it, onClick = onOpenDiscipline) } }
+            item { week?.let { WeekCard(it, onClick = { onOpenReview(null) }) } }
             item { SectionLabel("Meals") }
             items(current.slots, key = { it.mealType.name }) { slot ->
                 SlotCard(slot, onClick = { viewModel.openSlot(slot) })

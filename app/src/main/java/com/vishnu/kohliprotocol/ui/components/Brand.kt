@@ -16,7 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -90,25 +90,26 @@ fun AppBackground(modifier: Modifier = Modifier, content: @Composable BoxScope.(
         modifier = modifier
             .fillMaxSize()
             .background(Brush.verticalGradient(listOf(Color(0xFF15131B), KohliColors.Background, Color(0xFF0B0B0E))))
-            .drawBehind {
-                drawCircle(
-                    brush = Brush.radialGradient(
-                        colors = listOf(KohliColors.Accent.copy(alpha = 0.16f), Color.Transparent),
-                        center = Offset(size.width * 0.15f, size.height * 0.04f),
-                        radius = size.width * 0.9f,
-                    ),
-                    radius = size.width * 0.9f,
-                    center = Offset(size.width * 0.15f, size.height * 0.04f),
+            .drawWithCache {
+                // Gradients are built once per size, not on every frame.
+                val amberCenter = Offset(size.width * 0.15f, size.height * 0.04f)
+                val amberRadius = size.width * 0.9f
+                val amber = Brush.radialGradient(
+                    colors = listOf(KohliColors.Accent.copy(alpha = 0.16f), Color.Transparent),
+                    center = amberCenter,
+                    radius = amberRadius,
                 )
-                drawCircle(
-                    brush = Brush.radialGradient(
-                        colors = listOf(Color(0xFF7C5CFF).copy(alpha = 0.10f), Color.Transparent),
-                        center = Offset(size.width * 1.05f, size.height * 0.38f),
-                        radius = size.width * 0.8f,
-                    ),
-                    radius = size.width * 0.8f,
-                    center = Offset(size.width * 1.05f, size.height * 0.38f),
+                val violetCenter = Offset(size.width * 1.05f, size.height * 0.38f)
+                val violetRadius = size.width * 0.8f
+                val violet = Brush.radialGradient(
+                    colors = listOf(Color(0xFF7C5CFF).copy(alpha = 0.10f), Color.Transparent),
+                    center = violetCenter,
+                    radius = violetRadius,
                 )
+                onDrawBehind {
+                    drawCircle(brush = amber, radius = amberRadius, center = amberCenter)
+                    drawCircle(brush = violet, radius = violetRadius, center = violetCenter)
+                }
             },
         content = content,
     )

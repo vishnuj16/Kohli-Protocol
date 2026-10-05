@@ -52,6 +52,11 @@
             android:label="Guardian Gate" />
 
         <activity
+            android:name=".ui.review.DailyReviewActivity"
+            android:exported="false"
+            android:label="Daily review" />
+
+        <activity
             android:name=".ui.audit.AuditLogActivity"
             android:exported="false"
             android:label="Audit log" />

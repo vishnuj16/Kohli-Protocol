@@ -33,7 +33,11 @@ object AnalysisPrompt {
         5 = Bro is Kohli: disciplined, balanced, clean eating all day.
 
         Judge what was actually logged; do not invent food. Be blunt — this app is
-        intentionally strict. Reply with the JSON object only.
+        intentionally strict.
+
+        Also write "habit_summary": exactly two short sentences naming specific foods or times —
+        the first on what went well, the second on what hurt the day most.
+        Reply with the JSON object only.
     """.trimIndent()
 
     private val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
@@ -123,13 +127,14 @@ object AnalysisPrompt {
                             .put("enum", JSONArray(listOf("low", "medium", "high")))
                     )
                     .put("meals", JSONObject().put("type", "array").put("items", mealEstimate))
+                    .put("habit_summary", JSONObject().put("type", "string"))
             )
             .put(
                 "required",
                 JSONArray(
                     listOf(
                         "daily_minimum_calories", "daily_maximum_calories", "rating",
-                        "category", "confidence", "meals",
+                        "category", "confidence", "meals", "habit_summary",
                     )
                 )
             )

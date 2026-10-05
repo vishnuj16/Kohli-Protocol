@@ -21,11 +21,25 @@ android {
         applicationId = "com.vishnu.kohliprotocol"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        // Upgrade contract: versionCode only ever increases, every Room schema change bumps the
+        // DB version with a migration (never destructive), and every APK is signed with the same
+        // key. Then `adb install -r` keeps the database, DataStore, Keystore-encrypted API keys
+        // and photos in filesDir.
+        versionCode = 2
+        versionName = "1.1"
 
         buildConfigField("String", "GEMINI_API_KEY", localKey("GEMINI_API_KEY"))
         buildConfigField("String", "ANTHROPIC_API_KEY", localKey("ANTHROPIC_API_KEY"))
+    }
+
+    buildTypes {
+        release {
+            // Non-debuggable build: Compose runs much faster than in debug. Minification stays off
+            // to avoid any reflection surprises. Signed with the local debug key so it installs
+            // over the debug build (same signature, data kept) — fine for a sideloaded personal app.
+            isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("debug")
+        }
     }
 
     compileOptions {

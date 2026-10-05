@@ -32,6 +32,7 @@ class AnalysisRunWorker(context: Context, params: WorkerParameters) : CoroutineW
             ?: LocalDate.now().minusDays(1)
         val manager = (applicationContext as KohliApplication).container.analysisManager
 
+        manager.refreshTiers(through)
         var retry = false
         for (date in manager.pendingDates(through)) {
             val outcome = manager.analyze(date)

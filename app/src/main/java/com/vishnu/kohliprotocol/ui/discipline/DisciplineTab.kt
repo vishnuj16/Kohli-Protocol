@@ -54,14 +54,10 @@ import com.vishnu.kohliprotocol.ui.components.StatusPill
 import com.vishnu.kohliprotocol.ui.components.bounceClick
 import com.vishnu.kohliprotocol.ui.theme.KohliColors
 import com.vishnu.kohliprotocol.ui.theme.KohliType
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 
-private val clockTime = DateTimeFormatter.ofPattern("HH:mm")
 private const val STEP = 0.1f
 
-/** The Discipline tab: Biryani Parameter, games, restricted apps, weekly reports, testing. */
+/** The Discipline tab: Biryani Parameter, games, restricted apps, weekly reports. */
 @Composable
 fun DisciplineTab(
     viewModel: DisciplineViewModel,
@@ -124,12 +120,6 @@ fun DisciplineTab(
             onEmailPreview = viewModel::emailPreview,
         )
         ReportEmailSection(reportEmailInfo, onSave = viewModel::saveReportEmail)
-        TestingSection(
-            games = current.games,
-            onMockPass = { onGate(ProtectedAction.MockGamesPass(EnforcementRepository.TEST_OVERRIDE_MINUTES)) },
-            onMockFail = viewModel::mockFail,
-            onEndMock = viewModel::endMock,
-        )
         SectionCard("Security") {
             MutedText("Guardians, emergency override and the audit log live in Settings.")
             SecondaryButton("Open Settings", onClick = onOpenSettings)
@@ -268,7 +258,8 @@ private fun RestrictedAppsSection(
                 modifier = Modifier.padding(top = 8.dp),
             )
             lists[category].sorted().forEach { pkg ->
-                val label = appLabel(context.packageManager, pkg)
+                // PackageManager is IPC: look each label up once, not on every recomposition.
+                val label = remember(pkg) { appLabel(context.packageManager, pkg) }
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                     LetterAvatar(label ?: pkg)
                     Spacer(Modifier.width(12.dp))
@@ -301,28 +292,6 @@ private fun LetterAvatar(name: String) {
         contentAlignment = Alignment.Center,
     ) {
         Text(name.first().uppercase(), style = MaterialTheme.typography.labelLarge, color = KohliColors.Accent)
-    }
-}
-
-@Composable
-private fun TestingSection(games: GameAccessState, onMockPass: () -> Unit, onMockFail: () -> Unit, onEndMock: () -> Unit) {
-    SectionCard("Testing", borderColor = KohliColors.Accent.copy(alpha = 0.4f)) {
-        MutedText(
-            "Mock Weekly Evaluation — temporarily forces a pass or fail so the game lock can be tested " +
-                "on the phone. Reverts to the real result after ${EnforcementRepository.TEST_OVERRIDE_MINUTES} " +
-                "minutes and is recorded in the audit log."
-        )
-        if (games.isTestActive()) {
-            val until = Instant.ofEpochMilli(games.testOverrideUntil).atZone(ZoneId.systemDefault()).format(clockTime)
-            StatusPill("Active: ${if (games.testOverride == true) "PASS" else "FAIL"} until $until", KohliColors.Accent)
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-            SecondaryButton("Mock PASS (guardian)", onClick = onMockPass, contentColor = KohliColors.Logged, modifier = Modifier.weight(1f))
-            SecondaryButton("Mock FAIL", onClick = onMockFail, contentColor = KohliColors.Missing, modifier = Modifier.weight(1f))
-        }
-        if (games.isTestActive()) {
-            GhostButton("End test now", onClick = onEndMock)
-        }
     }
 }
 

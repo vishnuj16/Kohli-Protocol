@@ -94,7 +94,9 @@ class GuardianStore(context: Context) {
     private fun readRequests(prefs: Preferences): List<AuthorizationRequest> {
         val array = prefs[KEY_REQUESTS]?.let { runCatching { JSONArray(it) }.getOrNull() } ?: return emptyList()
         return (0 until array.length()).mapNotNull {
-            runCatching { AuthorizationRequest.fromJson(array.getJSONObject(it)) }.getOrNull()
+            // Requests for actions that no longer exist (e.g. the retired mock games pass) are
+            // dropped rather than left to fail on every read.
+            runCatching { AuthorizationRequest.fromJson(array.getJSONObject(it)).also { request -> request.action } }.getOrNull()
         }
     }
 

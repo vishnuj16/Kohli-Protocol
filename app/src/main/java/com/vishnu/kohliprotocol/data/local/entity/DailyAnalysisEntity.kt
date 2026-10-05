@@ -22,4 +22,8 @@ data class DailyAnalysisEntity(
     /** Validated per-meal min/max calorie estimates, as JSON. */
     val mealEstimatesJson: String? = null,
     val analyzedAt: Long,
+    /** Two-sentence AI summary of the day's habits (added in schema v2). */
+    val habitSummary: String? = null,
+    /** The AI's own 1–5 rating, kept so the final rating can blend it with the calorie tier (v3). */
+    val aiRating: Int? = null,
 )

@@ -208,6 +208,8 @@ class FoodRepository(
         categoryLabel: String?,
         confidence: String? = null,
         mealEstimatesJson: String? = null,
+        habitSummary: String? = null,
+        aiRating: Int? = null,
     ): DailyAnalysisEntity {
         require(minCalories in 0..MAX_DAILY_CALORIES) { "minCalories out of range: $minCalories" }
         require(maxCalories in minCalories..MAX_DAILY_CALORIES) {
@@ -228,6 +230,8 @@ class FoodRepository(
             category = category,
             confidence = confidence,
             mealEstimatesJson = mealEstimatesJson,
+            habitSummary = habitSummary,
+            aiRating = aiRating,
             analyzedAt = System.currentTimeMillis(),
         )
         database.withTransaction {
@@ -239,6 +243,22 @@ class FoodRepository(
             )
         }
         return analysis
+    }
+
+    /**
+     * Re-bands a stored analysis to [rating] (from its stored calorie range) without calling the
+     * AI. Returns true if the rating changed.
+     */
+    suspend fun updateAnalysisTier(date: LocalDate, rating: Int, reason: String): Boolean = database.withTransaction {
+        val analysis = analysisDao.get(date) ?: return@withTransaction false
+        if (analysis.rating == rating) return@withTransaction false
+        val category = requireNotNull(DailyCategory.fromRating(rating)) { "rating must be 1–5: $rating" }
+        analysisDao.upsert(analysis.copy(rating = rating, category = category))
+        audit.log(
+            AuditAction.DAILY_TIER_RECALCULATED,
+            "$date: ${analysis.rating} (${analysis.category.label}) → $rating (${category.label}) — $reason",
+        )
+        true
     }
 
     /** Returns false if there is no analysis for [date]. */

@@ -15,6 +15,7 @@ object AnalysisResponseParser {
     private const val MAX_DAILY_CALORIES = 20_000
     private const val MAX_MEAL_CALORIES = 10_000
     private val CONFIDENCE = setOf("low", "medium", "high")
+    private const val MAX_HABIT_SUMMARY = 400
 
     fun parse(raw: String): DailyAnalysisResult {
         val json = try {
@@ -41,6 +42,13 @@ object AnalysisResponseParser {
             value
         }
 
+        // Optional for robustness: older/other providers may omit it.
+        val habitSummary = json.opt("habit_summary")?.takeUnless { it == JSONObject.NULL }?.let {
+            val text = (it as? String)?.trim() ?: invalid("habit_summary must be a string")
+            if (text.length > MAX_HABIT_SUMMARY) invalid("habit_summary is too long")
+            text.ifEmpty { null }
+        }
+
         val meals = json.opt("meals")?.takeUnless { it == JSONObject.NULL }?.let {
             validateMeals(it as? JSONArray ?: invalid("meals must be an array"))
         }
@@ -52,6 +60,7 @@ object AnalysisResponseParser {
             category = category,
             confidence = confidence,
             mealEstimatesJson = meals?.toString(),
+            habitSummary = habitSummary,
         )
     }
 

@@ -162,6 +162,12 @@ class DashboardViewModel(
     /** Rolls the dashboard over to the new day after midnight. */
     fun refreshDate() {
         date.value = LocalDate.now()
+        refreshTiers()
+    }
+
+    /** Local re-banding of unapproved days (no AI call); see DailyAnalysisManager.refreshTiers. */
+    private fun refreshTiers() {
+        viewModelScope.launch { runCatching { analysis.refreshTiers() } }
     }
 
     // --- AI analysis -------------------------------------------------------------------------
@@ -281,7 +287,11 @@ class DashboardViewModel(
         updateEditor { copy(busy = true, error = null) }
         viewModelScope.launch {
             runCatching { action() }
-                .onSuccess { closeEditor(keepPhoto) }
+                .onSuccess {
+                    closeEditor(keepPhoto)
+                    // Logging, skipping or deleting can complete/incomplete a day: re-band it.
+                    refreshTiers()
+                }
                 .onFailure { e -> updateEditor { copy(busy = false, error = e.message ?: "Failed") } }
         }
     }

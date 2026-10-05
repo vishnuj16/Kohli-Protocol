@@ -27,7 +27,12 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -58,6 +63,7 @@ import com.vishnu.kohliprotocol.ui.guardian.SecurityViewModel
 import com.vishnu.kohliprotocol.ui.guardian.SettingsTab
 import com.vishnu.kohliprotocol.ui.motivation.MotivationTab
 import com.vishnu.kohliprotocol.ui.motivation.MotivationViewModel
+import com.vishnu.kohliprotocol.ui.review.DailyReviewActivity
 import com.vishnu.kohliprotocol.ui.settings.AiSettingsActivity
 import com.vishnu.kohliprotocol.ui.setup.SetupActivity
 import com.vishnu.kohliprotocol.ui.theme.KohliColors
@@ -78,8 +84,11 @@ class MainActivity : SecureActivity() {
 
     private var tab by mutableStateOf(AppTab.DASHBOARD)
 
-    /** The Motivation tab needs its own fingerprint/PIN on every entry. */
+    /** The Motivation tab needs its own fingerprint/PIN (valid for 5 minutes, see BiometricSecurityManager). */
     private var motivationUnlocked by mutableStateOf(false)
+
+    /** The user cancelled the Motivation prompt: don't re-prompt on every resume until they ask. */
+    private var motivationPromptDeclined = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -101,29 +110,63 @@ class MainActivity : SecureActivity() {
 
     override fun onSessionUnlocked() {
         // Coming back to the Motivation tab: the one session unlock also opens the gallery.
-        if (tab == AppTab.MOTIVATION) motivationUnlocked = true
+        if (tab == AppTab.MOTIVATION) {
+            container.biometric.markMotivationAuthenticated()
+            motivationUnlocked = true
+        }
     }
 
     private fun selectTab(next: AppTab) {
-        if (next != AppTab.MOTIVATION) motivationUnlocked = false
+        if (next == AppTab.MOTIVATION && tab != AppTab.MOTIVATION) motivationPromptDeclined = false
         tab = next
     }
 
-    private fun unlockMotivation() = authenticateSection("Motivation gallery") { motivationUnlocked = true }
+    private fun unlockMotivation() = authenticateSection(
+        reason = MOTIVATION_REASON,
+        onDeclined = { motivationPromptDeclined = true },
+    ) {
+        container.biometric.markMotivationAuthenticated()
+        motivationPromptDeclined = false
+        motivationUnlocked = true
+    }
+
+    /**
+     * Runs when the Motivation tab is shown and whenever the app resumes on it. Only acts while
+     * Motivation is the *active* tab — the copy that is fading out during a tab switch never
+     * prompts. Inside the 5-minute window it opens without asking.
+     */
+    private fun checkMotivationAccess() {
+        if (tab != AppTab.MOTIVATION) return
+        if (container.biometric.isMotivationSessionValid()) {
+            motivationUnlocked = true
+        } else {
+            motivationUnlocked = false
+            if (!motivationPromptDeclined) unlockMotivation()
+        }
+    }
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     private fun AppShell() {
         val dashboardState by dashboard.state.collectAsStateWithLifecycle()
+        // The bar slides away while scrolling down and returns on scroll up, so it never sits
+        // over content; it turns solid when content is underneath.
+        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+        LaunchedEffect(tab) {
+            scrollBehavior.state.heightOffset = 0f
+            scrollBehavior.state.contentOffset = 0f
+        }
 
         BackHandler(enabled = tab != AppTab.DASHBOARD) { selectTab(AppTab.DASHBOARD) }
 
         AppBackground {
         Scaffold(
+            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             containerColor = Color.Transparent,
             topBar = {
                 TopAppBar(
                     title = { KohliLogo() },
+                    scrollBehavior = scrollBehavior,
                     actions = {
                         dashboardState?.let {
                             BiryaniBadge(it.biryaniParameter, onClick = { selectTab(AppTab.DISCIPLINE) })
@@ -131,6 +174,7 @@ class MainActivity : SecureActivity() {
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = Color.Transparent,
+                        scrolledContainerColor = KohliColors.Background,
                         titleContentColor = KohliColors.Text,
                     ),
                 )
@@ -144,6 +188,7 @@ class MainActivity : SecureActivity() {
                         contentPadding = padding,
                         onOpenAiSettings = { startActivity(Intent(this@MainActivity, AiSettingsActivity::class.java)) },
                         onOpenDiscipline = { selectTab(AppTab.DISCIPLINE) },
+                        onOpenReview = { date -> startActivity(DailyReviewActivity.intent(this@MainActivity, date)) },
                     )
                     AppTab.MOTIVATION -> MotivationGate(padding)
                     AppTab.DISCIPLINE -> DisciplineTab(
@@ -171,18 +216,38 @@ class MainActivity : SecureActivity() {
     /** Shows the gallery only after its own unlock; prompts once on entry, with a retry button. */
     @Composable
     private fun MotivationGate(padding: PaddingValues) {
+        val lifecycleOwner = LocalLifecycleOwner.current
+        DisposableEffect(lifecycleOwner) {
+            // Adding the observer immediately replays ON_RESUME if the screen is already resumed.
+            val observer = LifecycleEventObserver { _, event ->
+                if (event == Lifecycle.Event.ON_RESUME) checkMotivationAccess()
+            }
+            lifecycleOwner.lifecycle.addObserver(observer)
+            onDispose {
+                lifecycleOwner.lifecycle.removeObserver(observer)
+                // Leaving Motivation kills any pending prompt so nothing pops up mid-transition.
+                container.biometric.cancelAuthentication(MOTIVATION_REASON)
+            }
+        }
+
         if (motivationUnlocked) {
             MotivationTab(motivation, padding)
         } else {
-            LaunchedEffect(Unit) { unlockMotivation() }
             Column(Modifier.padding(padding)) {
                 LockedPanel(
                     title = "Motivation is private",
-                    subtitle = "Your fingerprint or PIN is needed every time you open it.",
-                    onUnlock = ::unlockMotivation,
+                    subtitle = "Your fingerprint or PIN is needed to open it. It stays open for 5 minutes.",
+                    onUnlock = {
+                        motivationPromptDeclined = false
+                        unlockMotivation()
+                    },
                 )
             }
         }
+    }
+
+    private companion object {
+        const val MOTIVATION_REASON = "Motivation gallery"
     }
 }
 

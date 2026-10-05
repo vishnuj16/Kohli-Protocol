@@ -63,6 +63,8 @@ data class DailyAnalysisResult(
     val confidence: String?,
     /** Validated per-meal estimates, re-serialized as JSON. */
     val mealEstimatesJson: String?,
+    /** Two short sentences: what went well and what hurt the day. */
+    val habitSummary: String? = null,
     /** Set when a fallback model or key produced this result (for the audit log). */
     val fallbackNote: String? = null,
 )
