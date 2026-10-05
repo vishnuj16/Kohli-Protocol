@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The K monogram cropped to its own bounds, for the in-app logo. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="44dp"
+    android:height="48dp"
+    android:viewportWidth="44"
+    android:viewportHeight="48">
+    <group android:translateX="-33" android:translateY="-30">
+        <path android:pathData="M36.5,31h6a2.5,2.5 0,0 1,2.5 2.5v41a2.5,2.5 0,0 1,-2.5 2.5h-6a2.5,2.5 0,0 1,-2.5 -2.5v-41a2.5,2.5 0,0 1,2.5 -2.5z M45,53 L65,31 L76,31 L45,65z M51,51 L75,77 L63,77 L45,58z">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="34" android:startY="31"
+                    android:endX="76" android:endY="77">
+                    <item android:offset="0" android:color="#FFFFD24A" />
+                    <item android:offset="1" android:color="#FFFF7A00" />
+                </gradient>
+            </aapt:attr>
+        </path>
+    </group>
+</vector>

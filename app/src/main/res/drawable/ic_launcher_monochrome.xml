@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Themed-icon (Android 13+) layer: the same K in a single colour. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path android:fillColor="#FFFFFFFF" android:pathData="M36.5,31h6a2.5,2.5 0,0 1,2.5 2.5v41a2.5,2.5 0,0 1,-2.5 2.5h-6a2.5,2.5 0,0 1,-2.5 -2.5v-41a2.5,2.5 0,0 1,2.5 -2.5z M45,53 L65,31 L76,31 L45,65z M51,51 L75,77 L63,77 L45,58z" />
+</vector>

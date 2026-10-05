@@ -1,0 +1,48 @@
+# --- Secrets (never commit) ---------------------------------------------------
+# local.properties holds the Android SDK path and the optional dev AI keys
+# (GEMINI_API_KEY / ANTHROPIC_API_KEY) that are compiled into debug builds.
+local.properties
+*.env
+.env*
+secrets.properties
+
+# Signing keys
+*.jks
+*.keystore
+keystore.properties
+
+# --- Gradle / build output ----------------------------------------------------
+.gradle/
+build/
+**/build/
+.kotlin/
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+*.ap_
+*.dex
+output-metadata.json
+
+# Keep the Gradle wrapper jar (needed to build) and Room schemas (needed for migrations).
+!gradle/wrapper/gradle-wrapper.jar
+
+# --- IDEs & editors ------------------------------------------------------------
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+*.swp
+*~
+
+# --- Claude Code local state -------------------------------------------------
+.claude/settings.local.json
+
+# --- OS files -----------------------------------------------------------------
+.DS_Store
+Thumbs.db
+
+# --- Logs ---------------------------------------------------------------------
+*.log

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Kohli Protocol</string>
+    <string name="accessibility_service_label">Kohli Protocol Enforcement</string>
+    <string name="accessibility_service_description">Detects when food-delivery apps, or payment apps between 21:00 and 09:00, are opened and blocks them according to your personal discipline rules. Window access is used only to identify which apps are on screen; nothing is read, stored or sent anywhere.</string>
+</resources>

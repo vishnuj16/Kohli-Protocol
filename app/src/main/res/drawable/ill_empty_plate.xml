@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Empty feed: a clean plate with fork and knife. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="96dp" android:height="96dp"
+    android:viewportWidth="96" android:viewportHeight="96">
+    <path android:pathData="M48,50m-28,0a28,28 0,1 1,56 0a28,28 0,1 1,-56 0">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="20" android:startY="22" android:endX="76" android:endY="78">
+                <item android:offset="0" android:color="#FF2E2E3A" />
+                <item android:offset="1" android:color="#FF1A1A21" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:fillColor="#FF16161C" android:strokeColor="#FF34343A" android:strokeWidth="1.5"
+        android:pathData="M48,50m-19,0a19,19 0,1 1,38 0a19,19 0,1 1,-38 0" />
+    <path android:strokeColor="#FF9A9AA0" android:strokeWidth="2.4" android:strokeLineCap="round"
+        android:pathData="M10,30L10,78M6,30L6,40Q6,44 10,44Q14,44 14,40L14,30" />
+    <path android:strokeColor="#FF9A9AA0" android:strokeWidth="2.4" android:strokeLineCap="round" android:strokeLineJoin="round"
+        android:pathData="M86,78L86,30Q92,36 90,52L86,54" />
+    <path android:fillColor="#FFFFB000" android:pathData="M64,18L65.2,21.8L69,23L65.2,24.2L64,28L62.8,24.2L59,23L62.8,21.8Z" />
+</vector>

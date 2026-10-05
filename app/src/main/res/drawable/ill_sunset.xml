@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Evening / snacks: sunset with a bird. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="48dp" android:height="48dp"
+    android:viewportWidth="48" android:viewportHeight="48">
+    <path android:pathData="M11,32A13,13 0,0 1,37 32Z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="24" android:startY="19" android:endX="24" android:endY="32">
+                <item android:offset="0" android:color="#FFFFB26B" />
+                <item android:offset="1" android:color="#FFFF4D6D" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:strokeColor="#FFB388FF" android:strokeWidth="3" android:strokeLineCap="round"
+        android:pathData="M5,34.5L43,34.5" />
+    <path android:strokeColor="#80B388FF" android:strokeWidth="2.4" android:strokeLineCap="round"
+        android:pathData="M12,40L36,40" />
+    <path android:strokeColor="#FFEDEDED" android:strokeWidth="1.8" android:strokeLineCap="round" android:strokeLineJoin="round"
+        android:pathData="M31,11Q33.5,9 36,11.5Q38.5,9 41,11" />
+</vector>

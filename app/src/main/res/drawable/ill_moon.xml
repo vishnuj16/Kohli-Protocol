@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dinner: crescent moon and stars. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="48dp" android:height="48dp"
+    android:viewportWidth="48" android:viewportHeight="48">
+    <path android:pathData="M23.67,11A13,13 0,1 0,35.87 29.3A11,11 0,0 1,23.67 11Z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="12" android:startY="12" android:endX="34" android:endY="36">
+                <item android:offset="0" android:color="#FFE0E7FF" />
+                <item android:offset="1" android:color="#FF818CF8" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:fillColor="#FFFFD24A"
+        android:pathData="M37,8L38.1,11.4L41.5,12.5L38.1,13.6L37,17L35.9,13.6L32.5,12.5L35.9,11.4Z" />
+    <path android:fillColor="#B3FFD24A"
+        android:pathData="M42,20L42.6,21.9L44.5,22.5L42.6,23.1L42,25L41.4,23.1L39.5,22.5L41.4,21.9Z" />
+</vector>

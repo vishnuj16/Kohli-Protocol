@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Breakfast: sunrise over the horizon. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="48dp" android:height="48dp"
+    android:viewportWidth="48" android:viewportHeight="48">
+    <path android:strokeColor="#FFFFC940" android:strokeWidth="2.6" android:strokeLineCap="round"
+        android:pathData="M24,7L24,12M11.5,12.5L15,16M36.5,12.5L33,16M5,24L10,24M38,24L43,24" />
+    <path android:pathData="M12,31A12,12 0,0 1,36 31Z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="24" android:startY="19" android:endX="24" android:endY="31">
+                <item android:offset="0" android:color="#FFFFE08A" />
+                <item android:offset="1" android:color="#FFFFA000" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:strokeColor="#FFFF8A00" android:strokeWidth="3" android:strokeLineCap="round"
+        android:pathData="M6,33.5L42,33.5" />
+    <path android:strokeColor="#80FF8A00" android:strokeWidth="2.4" android:strokeLineCap="round"
+        android:pathData="M13,39L35,39" />
+</vector>

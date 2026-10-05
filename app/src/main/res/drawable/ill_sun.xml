@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Lunch: the full midday sun. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="48dp" android:height="48dp"
+    android:viewportWidth="48" android:viewportHeight="48">
+    <path android:strokeColor="#FFFFB000" android:strokeWidth="2.6" android:strokeLineCap="round"
+        android:pathData="M24,5L24,10M24,38L24,43M5,24L10,24M38,24L43,24M10.6,10.6L14.1,14.1M33.9,33.9L37.4,37.4M37.4,10.6L33.9,14.1M14.1,33.9L10.6,37.4" />
+    <path android:pathData="M24,24m-10,0a10,10 0,1 1,20 0a10,10 0,1 1,-20 0">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="radial" android:centerX="21" android:centerY="21" android:gradientRadius="14">
+                <item android:offset="0" android:color="#FFFFE9A8" />
+                <item android:offset="1" android:color="#FFFF8A00" />
+            </gradient>
+        </aapt:attr>
+    </path>
+</vector>
